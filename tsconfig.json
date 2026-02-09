@@ -19,6 +19,9 @@
       }
     ],
     "paths": {
+      // CORRECCIÓN FINAL: El alias @/ debe apuntar a la raíz del proyecto (./*)
+      // Esto permite que el código encuentre carpetas como 'auth', 'components', 'services', etc., 
+      // sin importar si están dentro o fuera de 'app'.
       "@/*": ["./*"]
     }
   },
