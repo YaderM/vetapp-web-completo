@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 // Asumimos que el servicio se encuentra en la ruta correcta: src/services/auth/AuthService
-import { registerUser } from '@/services/auth/AuthService'; 
+import { registerUser } from '../../services/auth/AuthService'; 
 import { RegisterPayload } from '@/types/auth.types'; // Necesitas definir este tipo si no existe
 import { Loader2, UserPlus, AlertCircle, CalendarCheck } from 'lucide-react';
 
