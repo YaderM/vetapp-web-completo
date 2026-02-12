@@ -1,4 +1,3 @@
-// app/propietarios/crear/page.tsx
 'use client';
 
 import { useState, FormEvent } from 'react';
@@ -7,13 +6,14 @@ import { useRouter } from 'next/navigation';
 
 // ----- ¡CORRECCIÓN DE RUTAS! -----
 import MainLayout from '@/app/components/Layout/MainLayout';
-// Importamos el servicio y el tipo de datos
-import { createPropietario, type NuevoPropietario } from '@/app/services/propietario.service'; 
+// CAMBIO: Importamos Propietario (asegúrate de que el servicio lo exporte)
+import { createPropietario, type Propietario } from '@/app/services/propietario.service'; 
 // ---------------------------------
 
 import { User, CheckCircle, AlertTriangle, Loader2, Save, ArrowLeft } from 'lucide-react';
 
-const initialFormState: NuevoPropietario = {
+// CAMBIO: Usamos Propietario en lugar de NuevoPropietario
+const initialFormState: Propietario = {
   nombre: '',
   apellido: '',
   email: '',
@@ -22,7 +22,8 @@ const initialFormState: NuevoPropietario = {
 };
 
 export default function CrearPropietarioPage() {
-  const [formData, setFormData] = useState<NuevoPropietario>(initialFormState);
+  // CAMBIO: Usamos Propietario aquí también
+  const [formData, setFormData] = useState<Propietario>(initialFormState);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function CrearPropietarioPage() {
 
   const validateForm = (): boolean => {
     if (!formData.nombre || !formData.apellido || !formData.email || !formData.telefono) {
-      setMessage({ type: 'error', text: 'Por favor, complete todos los campos obligatorios (Nombre, Apellido, Email, Teléfono).' });
+      setMessage({ type: 'error', text: 'Por favor, complete todos los campos obligatorios.' });
       return false;
     }
     return true;
@@ -51,19 +52,19 @@ export default function CrearPropietarioPage() {
     setLoading(true);
 
     try {
+      // El servicio ahora recibe el objeto con el tipo correcto
       const data = await createPropietario(formData);
 
       setMessage({ type: 'success', text: `✅ Propietario ${data.nombre} ${data.apellido} registrado exitosamente.` });
-      setFormData(initialFormState); // Limpiar el formulario
+      setFormData(initialFormState); 
 
-      // Redirigir de vuelta al listado después de 1.5 segundos
       setTimeout(() => {
         router.push('/propietarios');
       }, 1500);
 
     } catch (err: any) {
       console.error('Error de registro:', err);
-      setMessage({ type: 'error', text: err.message || 'Error desconocido al registrar al propietario.' });
+      setMessage({ type: 'error', text: err.message || 'Error al registrar.' });
     } finally {
       setLoading(false);
     }
@@ -78,7 +79,6 @@ export default function CrearPropietarioPage() {
             Registrar Nuevo Propietario
             </h1>
             
-            {/* ----- CORRECCIÓN DE 'legacyBehavior' ----- */}
             <Link 
                 href="/propietarios"
                 className="flex items-center text-gray-500 hover:text-indigo-600"
@@ -86,11 +86,8 @@ export default function CrearPropietarioPage() {
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Volver al listado
             </Link>
-            {/* ------------------------------------------- */}
         </div>
 
-
-        {/* Mensajes de feedback */}
         {message && (
           <div className={`p-4 mb-6 rounded-lg flex items-center ${
             message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -101,11 +98,9 @@ export default function CrearPropietarioPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 shadow-xl rounded-lg">
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Nombre */}
             <div>
-              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombre <span className="text-red-500">*</span></label>
+              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombre *</label>
               <input
                 type="text"
                 id="nombre"
@@ -117,9 +112,8 @@ export default function CrearPropietarioPage() {
               />
             </div>
             
-            {/* Apellido */}
             <div>
-              <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">Apellido <span className="text-red-500">*</span></label>
+              <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">Apellido *</label>
               <input
                 type="text"
                 id="apellido"
@@ -133,9 +127,8 @@ export default function CrearPropietarioPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email *</label>
               <input
                 type="email"
                 id="email"
@@ -147,9 +140,8 @@ export default function CrearPropietarioPage() {
               />
             </div>
 
-            {/* Teléfono */}
             <div>
-              <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">Teléfono <span className="text-red-500">*</span></label>
+              <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">Teléfono *</label>
               <input
                 type="tel"
                 id="telefono"
@@ -162,7 +154,6 @@ export default function CrearPropietarioPage() {
             </div>
           </div>
 
-          {/* Dirección */}
           <div>
             <label htmlFor="direccion" className="block text-sm font-medium text-gray-700">Dirección</label>
             <input
@@ -175,16 +166,13 @@ export default function CrearPropietarioPage() {
             />
           </div>
 
-          {/* Botones de Acción */}
           <div className="flex justify-end space-x-4 pt-4">
-            {/* ----- CORRECCIÓN DE 'legacyBehavior' (Botón Cancelar) ----- */}
             <Link 
               href="/propietarios"
               className="px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition duration-150"
             >
               Cancelar
             </Link>
-            {/* ------------------------------------------- */}
 
             <button
               type="submit"
