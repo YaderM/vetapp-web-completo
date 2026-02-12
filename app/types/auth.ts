@@ -1,4 +1,4 @@
-**
+/**
  * Interfaz base para un usuario, tal como se devuelve en el perfil o en la respuesta de autenticación.
  */
 export interface Usuario {
