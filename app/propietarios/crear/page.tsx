@@ -4,16 +4,16 @@ import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-// ----- ¡CORRECCIÓN DE RUTAS! -----
+// ----- RUTAS DE IMPORTACIÓN -----
 import MainLayout from '@/app/components/Layout/MainLayout';
-// CAMBIO: Importamos Propietario (asegúrate de que el servicio lo exporte)
+// Importamos el servicio y el tipo Propietario
 import { createPropietario, type Propietario } from '@/app/services/propietario.service'; 
 // ---------------------------------
 
 import { User, CheckCircle, AlertTriangle, Loader2, Save, ArrowLeft } from 'lucide-react';
 
-// CAMBIO: Usamos Propietario en lugar de NuevoPropietario
-const initialFormState: Propietario = {
+// CORRECCIÓN: Usamos Omit para que no nos pida el 'id' en el formulario de creación
+const initialFormState: Omit<Propietario, 'id'> = {
   nombre: '',
   apellido: '',
   email: '',
@@ -22,8 +22,8 @@ const initialFormState: Propietario = {
 };
 
 export default function CrearPropietarioPage() {
-  // CAMBIO: Usamos Propietario aquí también
-  const [formData, setFormData] = useState<Propietario>(initialFormState);
+  // El estado también debe reflejar que no hay 'id' por ahora
+  const [formData, setFormData] = useState<Omit<Propietario, 'id'>>(initialFormState);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const router = useRouter();
@@ -52,8 +52,8 @@ export default function CrearPropietarioPage() {
     setLoading(true);
 
     try {
-      // El servicio ahora recibe el objeto con el tipo correcto
-      const data = await createPropietario(formData);
+      // Enviamos los datos omitiendo el ID, el servicio se encargará del resto
+      const data = await createPropietario(formData as any);
 
       setMessage({ type: 'success', text: `✅ Propietario ${data.nombre} ${data.apellido} registrado exitosamente.` });
       setFormData(initialFormState); 
@@ -64,7 +64,7 @@ export default function CrearPropietarioPage() {
 
     } catch (err: any) {
       console.error('Error de registro:', err);
-      setMessage({ type: 'error', text: err.message || 'Error al registrar.' });
+      setMessage({ type: 'error', text: err.message || 'Error al registrar al propietario.' });
     } finally {
       setLoading(false);
     }
@@ -75,8 +75,8 @@ export default function CrearPropietarioPage() {
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex justify-between items-center mb-6 border-b pb-4">
             <h1 className="text-3xl font-extrabold text-gray-900 flex items-center">
-            <User className="w-7 h-7 mr-3 text-indigo-600" />
-            Registrar Nuevo Propietario
+                <User className="w-7 h-7 mr-3 text-indigo-600" />
+                Registrar Nuevo Propietario
             </h1>
             
             <Link 
@@ -169,7 +169,7 @@ export default function CrearPropietarioPage() {
           <div className="flex justify-end space-x-4 pt-4">
             <Link 
               href="/propietarios"
-              className="px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition duration-150"
+              className="px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
               Cancelar
             </Link>
@@ -177,7 +177,7 @@ export default function CrearPropietarioPage() {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center transition duration-150"
+              className="px-6 py-3 text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center"
             >
               {loading ? (
                 <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Guardando...</>
