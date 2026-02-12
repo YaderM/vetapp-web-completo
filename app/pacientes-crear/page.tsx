@@ -48,7 +48,7 @@ export default function PacientesCrearPage() {
       setError(null);
       const data: Propietario[] = await getPropietarios();
       // Mapeamos solo los datos que necesitamos para el dropdown
-      setPropietarios(data.map(p => ({ id: p.id, nombre: `${p.nombre} ${p.apellido}` })));
+      setPropietarios(data.map(p => ({ id: Number(p.id), nombre: `${p.nombre} ${p.apellido}` })));
     } catch (err: any) {
       console.error("Error al cargar propietarios:", err);
       setError("Error al cargar la lista de propietarios. " + err.message);
