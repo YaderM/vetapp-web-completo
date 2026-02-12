@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 // Ajusta esta ruta si es necesario (debe apuntar a tu servicio AuthService)
-import { logout } from '../../services/auth/AuthService'; 
+import { logout } from '../services/auth/AuthService'; 
 
 export default function LogoutPage() {
   const router = useRouter();
