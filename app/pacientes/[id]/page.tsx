@@ -47,8 +47,8 @@ export default function FichaPacientePage({ params }: { params: { id: string } }
         setLoading(true);
         setError(null);
         // Función real para obtener el paciente por su ID, incluyendo el propietario asociado
-        const data: PacienteFicha = await getPacienteById(id); 
-        setPaciente(data);
+        const data= await getPacienteById(id); 
+        setPaciente(data as any);
       } catch (err: any) {
         console.error('Error al cargar la ficha del paciente:', err);
         setError(err.message || "No se pudo cargar la ficha médica. ID no válido.");
