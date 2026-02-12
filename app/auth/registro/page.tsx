@@ -9,11 +9,11 @@ import { registerUser } from '../../services/auth/AuthService';
 // ⚠️ CAMBIO DE SEGURIDAD: Usamos ../.. en lugar de @ para evitar errores en Render
 // Si tu carpeta 'types' está en 'app/types', esto funcionará perfecto.
 // Si te marca rojo, prueba con tres puntos: ../../../types/auth.types
-import { RegisterPayload } from '../../types/auth.types'; 
+import { RegisterData } from '../../types/auth.types'; 
 
 import { Loader2, UserPlus, AlertCircle, CalendarCheck } from 'lucide-react';
 
-const initialFormData: RegisterPayload = {
+const initialFormData: RegisterData = {
   nombre: '',
   email: '',
   password: '',
@@ -24,7 +24,7 @@ const initialFormData: RegisterPayload = {
  */
 export default function RegistroPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState<RegisterPayload>(initialFormData);
+  const [formData, setFormData] = useState<RegisterData>(initialFormData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
