@@ -1,9 +1,9 @@
-import api from './api'; 
-// CORRECCIÓN 1: Ajustamos la ruta de tipos a ../../ para que no falle al buscarlos
+// CORRECCIÓN 1: Agregamos un punto extra (..) para buscar api.ts en la carpeta 'services'
+import api from '../api'; 
+// CORRECCIÓN 2: Mantenemos la ruta de tipos que ya arreglamos antes
 import { LoginData, RegisterData, AuthResponse, Usuario } from '../../types/auth'; 
 
 const AuthService = {
-  // ... login se mantiene igual ...
   async login(data: LoginData): Promise<AuthResponse> {
     try {
       const response = await api.post<AuthResponse>('/auth/login', data);
@@ -16,7 +16,6 @@ const AuthService = {
     }
   },
 
-  // CORRECCIÓN 2: Cambiamos el nombre de 'register' a 'registerUser' para coincidir con tu página
   async registerUser(data: RegisterData): Promise<AuthResponse> {
     try {
       const response = await api.post<AuthResponse>('/auth/register', data);
@@ -49,12 +48,11 @@ const AuthService = {
   }
 };
 
-// CORRECCIÓN 3: Exportamos las funciones individualmente para que funcionen los imports con { }
+// Exportaciones individuales
 export const registerUser = AuthService.registerUser;
 export const login = AuthService.login;
 export const logout = AuthService.logout;
 export const isAuthenticated = AuthService.isAuthenticated;
 export const getProfile = AuthService.getProfile;
 
-// Mantenemos el export default por si acaso
 export default AuthService;
