@@ -94,7 +94,7 @@ export default function CrearCitaPage() {
       const dataToSend: CitaPayload = {
         fecha: fechaHoraISO,
         motivo,
-        pacienteId: Number(pacienteId),
+        pacienteId: String(pacienteId),
       };
 
       await createCita(dataToSend);
