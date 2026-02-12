@@ -3,9 +3,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-// Asumimos que el servicio se encuentra en la ruta correcta: src/services/auth/AuthService
+// ✅ Importación correcta del servicio (coincide con tu AuthService actual)
 import { registerUser } from '../../services/auth/AuthService'; 
-import { RegisterPayload } from '@/types/auth.types'; // Necesitas definir este tipo si no existe
+
+// ⚠️ CAMBIO DE SEGURIDAD: Usamos ../.. en lugar de @ para evitar errores en Render
+// Si tu carpeta 'types' está en 'app/types', esto funcionará perfecto.
+// Si te marca rojo, prueba con tres puntos: ../../../types/auth.types
+import { RegisterPayload } from '../../types/auth.types'; 
+
 import { Loader2, UserPlus, AlertCircle, CalendarCheck } from 'lucide-react';
 
 const initialFormData: RegisterPayload = {
