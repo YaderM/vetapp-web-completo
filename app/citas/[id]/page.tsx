@@ -136,7 +136,7 @@ export default function CitaFichaPage() {
         const fechaHoraCombined = new Date(`${fechaCita}T${horaCita}`).toISOString();
 
         const payload: CitaPayload = {
-            pacienteId: Number(pacienteId),
+            pacienteId: String(pacienteId),
             motivo,
             fecha: fechaHoraCombined,
         };
