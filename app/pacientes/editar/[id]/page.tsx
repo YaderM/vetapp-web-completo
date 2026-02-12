@@ -1,6 +1,6 @@
 'use client'; 
 
-import { useState, FormEvent, useEffect, use } from 'react'; // Agregamos 'use'
+import { useState, FormEvent, useEffect, use } from 'react'; 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PawPrint, User, CheckCircle, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
@@ -25,7 +25,6 @@ interface SelectPropietario {
 }
 
 export default function EditarPacientePage({ params }: { params: Promise<{ id: string }> }) {
-  // CORRECCIÓN NEXT.JS 15+: Desempaquetamos params con 'use'
   const resolvedParams = use(params);
   const id = resolvedParams.id;
   
@@ -43,24 +42,21 @@ export default function EditarPacientePage({ params }: { params: Promise<{ id: s
     async function fetchData() {
       try {
         setLoading(true);
-        // 1. Cargar propietarios
         const propData = await getPropietarios();
         setPropietarios(propData.map((p: any) => ({ 
-            id: String(p.id), // Aseguramos ID como String
+            id: String(p.id), 
             nombre: `${p.nombre} ${p.apellido}` 
         })));
 
-        // 2. Cargar datos del paciente
         const pacienteData = await getPacienteById(id);
 
         setFormData({
-            id: String(pacienteData.id), // CORRECCIÓN: number a string
+            id: String(pacienteData.id),
             nombre: pacienteData.nombre,
             especie: pacienteData.especie,
             raza: pacienteData.raza,
-            edad: pacienteData.edad,
+            edad: pacienteData.edad ?? '', // Si es nulo en BD, ponemos ""
             historialMedico: pacienteData.historialMedico,
-            // CORRECCIÓN: Acceso seguro al ID del propietario
             propietarioId: String(pacienteData.propietario?.id || ''), 
         });
 
@@ -93,16 +89,17 @@ export default function EditarPacientePage({ params }: { params: Promise<{ id: s
 
     setIsSubmitting(true);
     
+    // CORRECCIÓN CLAVE: Usamos '' en lugar de null para cumplir con el tipo Paciente
     const dataToSend = {
       ...formData,
-      edad: formData.edad === '' ? null : Number(formData.edad),
-      // Enviamos el ID como número si tu API así lo requiere, 
-      // si no, déjalo como está.
+      edad: formData.edad === '' ? '' : Number(formData.edad),
       propietarioId: Number(formData.propietarioId) 
     };
 
     try {
-      const data = await updatePaciente(id, dataToSend); 
+      // Usamos 'as any' aquí solo si el servicio updatePaciente tiene 
+      // una definición de tipo muy rígida que no acepte ""
+      await updatePaciente(id, dataToSend as any); 
       setMessage({ type: 'success', text: `✅ Paciente actualizado exitosamente.` });
       setTimeout(() => router.push(`/pacientes/${id}`), 1500);
     } catch (err: any) {
@@ -127,7 +124,7 @@ export default function EditarPacientePage({ params }: { params: Promise<{ id: s
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-6 flex items-center">
           <PawPrint className="w-7 h-7 mr-3 text-indigo-600" />
-          Editar Paciente
+          Editar Paciente: {formData.nombre}
         </h1>
 
         {message && (
@@ -162,9 +159,27 @@ export default function EditarPacientePage({ params }: { params: Promise<{ id: s
               <label className="block text-sm font-medium text-gray-700 mb-1">Especie *</label>
               <input name="especie" value={formData.especie} onChange={handleChange} required className="w-full p-3 border border-gray-300 rounded-lg" />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Raza</label>
+              <input name="raza" value={formData.raza} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Edad (años)</label>
+              <input type="number" name="edad" value={formData.edad} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Historial Médico</label>
+            <textarea name="historialMedico" value={formData.historialMedico} onChange={handleChange} rows={4} className="w-full p-3 border border-gray-300 rounded-lg" />
           </div>
 
           <div className="flex justify-end space-x-4 pt-4">
+            <Link href={`/pacientes/${id}`}>
+              <button type="button" className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md flex items-center hover:bg-gray-50">
+                <ArrowLeft className="w-5 h-5 mr-2" /> Volver
+              </button>
+            </Link>
             <button
               type="submit"
               disabled={isSubmitting}
