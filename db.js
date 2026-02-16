@@ -10,7 +10,7 @@ const pool = mysql.createPool({
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'vetapp_db', // Nombre de la DB
-    port: process.env.DB_PORT || 3307,
+    port: process.env.DB_PORT || 25060,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
