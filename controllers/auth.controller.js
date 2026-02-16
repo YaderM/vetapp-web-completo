@@ -16,7 +16,7 @@ const register = async (req, res) => {
         return res.status(400).json({ message: 'Por favor, introduce todos los campos: nombre, email y contraseña.' });
     }
     try {
-        const [existingUser] = await db.query('SELECT id, email FROM Usuarios WHERE email = ?', [email]);
+        const [existingUser] = await db.query('SELECT id, email FROM usuarios WHERE email = ?', [email]);
         if (existingUser.length > 0) {
             return res.status(400).json({ message: 'El usuario con ese email ya existe.' });
         }
