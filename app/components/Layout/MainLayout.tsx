@@ -41,7 +41,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   // Componente para un solo enlace de navegación
   const NavLink = ({ item }: { item: NavItem }) => {
-    const isActive = pathname.startsWith(item.activeSegment);
+    const isActive = (pathname || '').startsWith(item.activeSegment);
     const Icon = item.icon;
 
     return (
