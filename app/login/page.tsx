@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, Suspense } from "react"; // 1. Añadimos Suspense
+import { useState, useEffect, Suspense } from "react"; 
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation"; 
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
-// 2. Movemos TODA la lógica actual a un componente interno
 function LoginForm() {
     const [email, setEmail] = useState("admin@vetapp.com");
     const [password, setPassword] = useState("password123");
@@ -15,7 +14,9 @@ function LoginForm() {
     const router = useRouter();
 
     const searchParams = useSearchParams();
-    const authError = searchParams.get('error');
+    
+    // CORRECCIÓN AQUÍ: Agregamos el '?' antes del .get
+    const authError = searchParams?.get('error');
 
     useEffect(() => {
         if (authError === "CredentialsSignin") {
@@ -104,7 +105,6 @@ function LoginForm() {
     );
 }
 
-// 3. El export default envuelve al componente en un Suspense Boundary
 export default function LoginPage() {
     return (
         <Suspense fallback={
