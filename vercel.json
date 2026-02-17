@@ -1,12 +1,29 @@
 {
+  "version": 2,
   "rewrites": [
     {
-      "source": "/api/auth/:path*",
-      "destination": "/api/auth/:path*"
+      "source": "/api/auth/login",
+      "destination": "/api/index"
     },
     {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
+      "source": "/api/auth/registro",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/propietarios/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/pacientes/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/citas/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/perfil/:path*",
+      "destination": "/api/index"
     }
   ]
 }
