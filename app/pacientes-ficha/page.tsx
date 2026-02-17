@@ -20,7 +20,7 @@ import { Loader2, PawPrint, User, Home, Edit2, Trash2, ArrowLeft, ClipboardList,
 
 export default function FichaPacientePage() {
   const params = useParams();
-  const id = params.id as string; 
+  const id = params?.id as string; 
   const router = useRouter();
   
   const [paciente, setPaciente] = useState<Paciente | null>(null);
