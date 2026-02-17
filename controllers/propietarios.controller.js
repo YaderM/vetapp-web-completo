@@ -1,4 +1,3 @@
-// controllers/propietarios.controller.js
 const db = require('../db'); // Importamos la conexión a MySQL desde db.js
 
 /**
@@ -6,7 +5,8 @@ const db = require('../db'); // Importamos la conexión a MySQL desde db.js
  * @route GET /api/propietarios
  */
 const getAllPropietarios = async (req, res) => {
-    const query = 'SELECT * FROM Propietarios ORDER BY apellido, nombre';
+    // CORRECCIÓN: 'propietarios' en minúscula
+    const query = 'SELECT * FROM propietarios ORDER BY apellido, nombre';
     try {
         const [rows] = await db.query(query); 
         res.status(200).json(rows);
@@ -22,7 +22,8 @@ const getAllPropietarios = async (req, res) => {
  */
 const getPropietarioById = async (req, res) => {
     const { id } = req.params;
-    const query = 'SELECT * FROM Propietarios WHERE id = ?';
+    // CORRECCIÓN: 'propietarios' en minúscula
+    const query = 'SELECT * FROM propietarios WHERE id = ?';
     try {
         const [rows] = await db.query(query, [id]);
         if (rows.length === 0) {
@@ -44,7 +45,8 @@ const createPropietario = async (req, res) => {
     if (!nombre || !apellido || !telefono || !email) {
         return res.status(400).json({ message: 'Faltan campos obligatorios: nombre, apellido, teléfono y email.' });
     }
-    const query = 'INSERT INTO Propietarios (nombre, apellido, telefono, email, direccion) VALUES (?, ?, ?, ?, ?)';
+    // CORRECCIÓN: 'propietarios' en minúscula
+    const query = 'INSERT INTO propietarios (nombre, apellido, telefono, email, direccion) VALUES (?, ?, ?, ?, ?)';
     try {
         const [result] = await db.query(query, [nombre, apellido, telefono, email, direccion]);
         res.status(201).json({
@@ -75,7 +77,8 @@ const updatePropietario = async (req, res) => {
     if (!nombre || !apellido || !telefono || !email) {
         return res.status(400).json({ message: 'Faltan campos obligatorios para la actualización.' });
     }
-    const query = 'UPDATE Propietarios SET nombre = ?, apellido = ?, telefono = ?, email = ?, direccion = ? WHERE id = ?';
+    // CORRECCIÓN: 'propietarios' en minúscula
+    const query = 'UPDATE propietarios SET nombre = ?, apellido = ?, telefono = ?, email = ?, direccion = ? WHERE id = ?';
     try {
         const [result] = await db.query(query, [nombre, apellido, telefono, email, direccion, id]);
         if (result.affectedRows === 0) {
@@ -105,7 +108,8 @@ const updatePropietario = async (req, res) => {
  */
 const deletePropietario = async (req, res) => {
     const { id } = req.params;
-    const query = 'DELETE FROM Propietarios WHERE id = ?';
+    // CORRECCIÓN: 'propietarios' en minúscula
+    const query = 'DELETE FROM propietarios WHERE id = ?';
     try {
         const [result] = await db.query(query, [id]);
         if (result.affectedRows === 0) {
@@ -115,7 +119,7 @@ const deletePropietario = async (req, res) => {
     } catch (error) {
         console.error(`Error al eliminar propietario con ID ${id}:`, error);
         if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-             return res.status(409).json({ message: 'Conflicto: No se puede eliminar el propietario porque tiene pacientes asociados. Elimine los pacientes primero.' });
+             return res.status(409).json({ message: 'Conflicto: No se puede eliminar el propietario porque tiene pacientes asociados.' });
         }
         res.status(500).json({ message: 'Error interno del servidor al eliminar propietario.' });
     }

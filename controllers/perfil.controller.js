@@ -1,6 +1,4 @@
-// controllers/perfil.controller.js
 const db = require('../db');
-const bcrypt = require('bcryptjs'); // (Opcional si permites cambiar clave)
 
 /**
  * @desc Obtener el perfil del usuario actual (logueado)
@@ -8,10 +6,12 @@ const bcrypt = require('bcryptjs'); // (Opcional si permites cambiar clave)
  */
 const getMyProfile = async (req, res) => {
     try {
-        // req.user es adjuntado por el middleware 'protect'
+        // req.user es adjuntado por el middleware 'protect' (gracias a NextAuth y tu middleware)
+        // Asegúrate de que tu middleware decodifique bien el token.
         const userId = req.user.id; 
 
-        const [rows] = await db.query('SELECT id, nombre, email FROM Usuarios WHERE id = ?', [userId]);
+        // CORRECCIÓN: Tabla 'usuarios' en minúscula
+        const [rows] = await db.query('SELECT id, nombre, email, rol FROM usuarios WHERE id = ?', [userId]);
 
         if (rows.length === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado.' });
@@ -37,7 +37,8 @@ const updateMyProfile = async (req, res) => {
     }
 
     try {
-        const query = 'UPDATE Usuarios SET nombre = ?, email = ? WHERE id = ?';
+        // CORRECCIÓN: Tabla 'usuarios' en minúscula
+        const query = 'UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?';
         const [result] = await db.query(query, [nombre, email, userId]);
 
         if (result.affectedRows === 0) {

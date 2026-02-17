@@ -1,4 +1,3 @@
-// controllers/citas.controller.js
 const db = require('../db'); // Importa la conexión a MySQL
 
 /**
@@ -6,17 +5,17 @@ const db = require('../db'); // Importa la conexión a MySQL
  * @route GET /api/citas
  */
 const getAllCitas = async (req, res) => {
-    // Consulta SQL con JOINs para obtener nombres de paciente y propietario
+    // CORRECCIÓN: Tablas 'citas', 'pacientes', 'propietarios' en minúscula
     const query = `
         SELECT 
-            c.id, c.fecha, c.motivo, c.pacienteId,
+            c.id, c.fecha, c.hora, c.motivo, c.estado, c.pacienteId,
             p.nombre AS pacienteNombre,
             pr.nombre AS propietarioNombre,
             pr.apellido AS propietarioApellido
-        FROM Citas c
-        JOIN Pacientes p ON c.pacienteId = p.id
-        JOIN Propietarios pr ON p.propietarioId = pr.id
-        ORDER BY c.fecha DESC;
+        FROM citas c
+        JOIN pacientes p ON c.pacienteId = p.id
+        JOIN propietarios pr ON p.propietarioId = pr.id
+        ORDER BY c.fecha DESC, c.hora ASC;
     `;
     
     try {
@@ -26,7 +25,9 @@ const getAllCitas = async (req, res) => {
         const citas = rows.map(row => ({
             id: row.id,
             fecha: row.fecha,
+            hora: row.hora, // Agregué hora por si la necesitas en el front
             motivo: row.motivo,
+            estado: row.estado,
             pacienteId: row.pacienteId,
             pacienteNombre: row.pacienteNombre,
             propietarioNombre: `${row.propietarioNombre} ${row.propietarioApellido}`
@@ -45,12 +46,13 @@ const getAllCitas = async (req, res) => {
  */
 const getCitaById = async (req, res) => {
     const { id } = req.params;
+    // CORRECCIÓN: Tablas en minúscula
     const query = `
         SELECT 
-            c.id, c.fecha, c.motivo, c.pacienteId,
+            c.id, c.fecha, c.hora, c.motivo, c.estado, c.pacienteId,
             p.nombre AS pacienteNombre
-        FROM Citas c
-        JOIN Pacientes p ON c.pacienteId = p.id
+        FROM citas c
+        JOIN pacientes p ON c.pacienteId = p.id
         WHERE c.id = ?;
     `;
     
@@ -62,11 +64,12 @@ const getCitaById = async (req, res) => {
         }
         
         const row = rows[0];
-        // Mapeamos
         const cita = {
             id: row.id,
             fecha: row.fecha,
+            hora: row.hora,
             motivo: row.motivo,
+            estado: row.estado,
             pacienteId: row.pacienteId,
             pacienteNombre: row.pacienteNombre,
         };
@@ -83,20 +86,23 @@ const getCitaById = async (req, res) => {
  * @route POST /api/citas
  */
 const createCita = async (req, res) => {
-    const { fecha, motivo, pacienteId } = req.body;
+    const { fecha, hora, motivo, pacienteId } = req.body;
 
     if (!fecha || !motivo || !pacienteId) {
-        return res.status(400).json({ message: 'Faltan campos obligatorios: fecha, motivo y pacienteId.' });
+        return res.status(400).json({ message: 'Faltan campos obligatorios.' });
     }
 
-    const query = 'INSERT INTO Citas (fecha, motivo, pacienteId) VALUES (?, ?, ?)';
+    // CORRECCIÓN: Tabla 'citas' en minúscula y agregamos campo 'hora' si viene
+    const query = 'INSERT INTO citas (fecha, hora, motivo, pacienteId) VALUES (?, ?, ?, ?)';
     
     try {
-        const [result] = await db.query(query, [fecha, motivo, pacienteId]);
+        // Si no mandan hora, ponemos una por defecto o null
+        const horaFinal = hora || '00:00:00'; 
+        const [result] = await db.query(query, [fecha, horaFinal, motivo, pacienteId]);
         
         res.status(201).json({
             id: result.insertId,
-            fecha, motivo, pacienteId
+            fecha, hora: horaFinal, motivo, pacienteId
         });
     } catch (error) {
         console.error('Error al crear cita:', error);
@@ -113,16 +119,19 @@ const createCita = async (req, res) => {
  */
 const updateCita = async (req, res) => {
     const { id } = req.params;
-    const { fecha, motivo, pacienteId } = req.body;
+    const { fecha, hora, motivo, estado, pacienteId } = req.body;
 
     if (!fecha || !motivo || !pacienteId) {
         return res.status(400).json({ message: 'Faltan campos obligatorios.' });
     }
 
-    const query = 'UPDATE Citas SET fecha = ?, motivo = ?, pacienteId = ? WHERE id = ?';
+    // CORRECCIÓN: Tabla 'citas' en minúscula
+    const query = 'UPDATE citas SET fecha = ?, hora = ?, motivo = ?, estado = ?, pacienteId = ? WHERE id = ?';
     
     try {
-        const [result] = await db.query(query, [fecha, motivo, pacienteId, id]);
+        const horaFinal = hora || '00:00:00';
+        const estadoFinal = estado || 'Pendiente';
+        const [result] = await db.query(query, [fecha, horaFinal, motivo, estadoFinal, pacienteId, id]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: `No se encontró la Cita con ID ${id} para actualizar.` });
@@ -130,7 +139,7 @@ const updateCita = async (req, res) => {
         
         res.status(200).json({ 
             id: id, 
-            fecha, motivo, pacienteId,
+            fecha, hora: horaFinal, motivo, estado: estadoFinal, pacienteId,
             message: 'Cita actualizada correctamente.' 
         });
     } catch (error) {
@@ -148,7 +157,8 @@ const updateCita = async (req, res) => {
  */
 const deleteCita = async (req, res) => {
     const { id } = req.params;
-    const query = 'DELETE FROM Citas WHERE id = ?';
+    // CORRECCIÓN: Tabla 'citas' en minúscula
+    const query = 'DELETE FROM citas WHERE id = ?';
     
     try {
         const [result] = await db.query(query, [id]);
