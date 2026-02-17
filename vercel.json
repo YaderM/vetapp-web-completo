@@ -3,27 +3,27 @@
   "rewrites": [
     {
       "source": "/api/auth/login",
-      "destination": "/api/index"
+      "destination": "/api/backend"
     },
     {
       "source": "/api/auth/registro",
-      "destination": "/api/index"
+      "destination": "/api/backend"
     },
     {
       "source": "/api/propietarios/:path*",
-      "destination": "/api/index"
+      "destination": "/api/backend"
     },
     {
       "source": "/api/pacientes/:path*",
-      "destination": "/api/index"
+      "destination": "/api/backend"
     },
     {
       "source": "/api/citas/:path*",
-      "destination": "/api/index"
+      "destination": "/api/backend"
     },
     {
       "source": "/api/perfil/:path*",
-      "destination": "/api/index"
+      "destination": "/api/backend"
     }
   ]
 }

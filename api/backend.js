@@ -41,7 +41,7 @@ db.query('SELECT 1 + 1 AS solution')
     });
 
 // Definición de Rutas de la API
-// app.use('/api/auth', authRoutes); 
+app.use('/api/auth', authRoutes); 
 app.use('/api/propietarios', propietariosRoutes); 
 app.use('/api/pacientes', pacientesRoutes); 
 app.use('/api/citas', citasRoutes);
