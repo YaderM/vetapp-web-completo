@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 // ✅ Importación correcta del servicio (coincide con tu AuthService actual)
-import { registerUser } from '../../services/auth/AuthService'; 
+import { registerUser } from '../../services/auth/AuthService';
 
 // ⚠️ CAMBIO DE SEGURIDAD: Usamos ../.. en lugar de @ para evitar errores en Render
 // Si tu carpeta 'types' está en 'app/types', esto funcionará perfecto.
