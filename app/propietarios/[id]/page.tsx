@@ -17,7 +17,7 @@ const mockPropietarios = {
  * Utiliza los `params` para obtener el ID de la URL.
  */
 export default function FichaPropietarioPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+  const id = params?.id;
   const router = useRouter();
   const [propietario, setPropietario] = useState<any>(null);
   const [loading, setLoading] = useState(true);

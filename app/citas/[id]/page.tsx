@@ -58,7 +58,7 @@ const splitDateTime = (isoString: string) => {
 export default function CitaFichaPage() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id as string; 
+  const id = params?.id as string;
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [pacientes, setPacientes] = useState<Paciente[]>([]);

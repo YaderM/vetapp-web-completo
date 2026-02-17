@@ -33,7 +33,7 @@ interface PacienteFicha {
 // --- Fin de Tipos ---
 
 export default function FichaPacientePage({ params }: { params: { id: string } }) {
-  const { id } = params;
+  const id = params?.id;
   const router = useRouter();
   
   const [paciente, setPaciente] = useState<PacienteFicha | null>(null);
