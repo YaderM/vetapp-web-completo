@@ -1,13 +1,14 @@
 // app/services/api.ts
-// Este es el "corazón" de la conexión del frontend con el backend.
-
 import axios from 'axios';
 import { getSession } from 'next-auth/react'; 
 
-// 1. Creamos la instancia de Axios con la URL base del backend
+// 1. Creamos la instancia de Axios
 const api = axios.create({
-  // CORRECCIÓN: Usamos el nombre exacto configurado en Render
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api',
+  // FORZAMOS la URL de Vercel aquí para evitar que Render se llame a sí mismo
+  baseURL: 'https://vetapp-web-completo.vercel.app/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 // 2. Interceptor de Solicitud (Request Interceptor)
