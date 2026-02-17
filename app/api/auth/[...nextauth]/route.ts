@@ -33,17 +33,21 @@ export const authOptions: NextAuthOptions = {
 
                     const apiData = await response.json();
                     
-                    // Ajusta esto según tu backend (apiData.usuario o apiData.user)
-                    const backendUser = apiData.usuario || apiData.user;
-
-                    if (!backendUser || !apiData.token) return null;
+                    // --- CORRECCIÓN AQUÍ ---
+                    // Tu backend envía los datos directamente en apiData (id, nombre, email, token)
+                    // No vienen dentro de un objeto .usuario o .user
+                    if (!apiData.id || !apiData.token) {
+                        console.error("El backend no devolvió ID o Token correctamente");
+                        return null;
+                    }
 
                     return {
-                        id: String(backendUser.id),
-                        email: backendUser.email,
-                        name: backendUser.nombre,
+                        id: String(apiData.id),
+                        email: apiData.email,
+                        name: apiData.nombre,
                         token: apiData.token,
                     } as any;
+                    // --- FIN DE LA CORRECCIÓN ---
 
                 } catch (error) {
                     console.error("Error Auth:", error);
