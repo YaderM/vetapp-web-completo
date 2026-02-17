@@ -1,12 +1,13 @@
-// CORRECCIÓN 1: Agregamos un punto extra (..) para buscar api.ts en la carpeta 'services'
+// CORRECCIÓN 1: Importación de la instancia de API
 import api from '../api'; 
-// CORRECCIÓN 2: Mantenemos la ruta de tipos que ya arreglamos antes
+// CORRECCIÓN 2: Tipos de datos
 import { LoginData, RegisterData, AuthResponse, Usuario } from '../../types/auth'; 
 
 const AuthService = {
   async login(data: LoginData): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/auth/login', data);
+      // ✅ CORRECTO: Sin barra inicial usa la baseURL de Vercel
+      const response = await api.post<AuthResponse>('auth/login', data);
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', response.data.token);
       }
@@ -18,7 +19,8 @@ const AuthService = {
 
   async registerUser(data: RegisterData): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/auth/register', data);
+      // 🛠️ CORREGIDO: Quitamos la barra '/' inicial para que NO llame a Render
+      const response = await api.post<AuthResponse>('auth/register', data);
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', response.data.token);
       }
@@ -43,7 +45,8 @@ const AuthService = {
   },
 
   async getProfile(): Promise<Usuario> {
-    const response = await api.get<Usuario>('/auth/profile');
+    // 🛠️ CORREGIDO: Quitamos la barra '/' inicial
+    const response = await api.get<Usuario>('auth/profile');
     return response.data;
   }
 };

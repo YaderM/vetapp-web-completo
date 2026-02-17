@@ -1,25 +1,22 @@
-// app/services/api.ts
 import axios from 'axios';
 import { getSession } from 'next-auth/react'; 
 
-// 1. Creamos la instancia de Axios
+// 1. Instancia de Axios apuntando directamente a Vercel
 const api = axios.create({
-  // FORZAMOS la URL de Vercel aquí para evitar que Render se llame a sí mismo
+  // Nota: No incluimos barra '/' al final de la URL para evitar duplicados
   baseURL: 'https://vetapp-web-completo.vercel.app/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// 2. Interceptor de Solicitud (Request Interceptor)
+// 2. Interceptor para el manejo de tokens
 api.interceptors.request.use(
   async (config) => {
-    // Obtenemos la sesión actual del cliente (de NextAuth)
     const session = await getSession();
 
-    // Si la sesión existe y tiene el token de la API...
+    // Verificamos la existencia del token en la sesión de NextAuth
     if (session && (session as any).user && (session as any).user.token) {
-      // Adjuntamos el token al encabezado 'Authorization'
       config.headers.Authorization = `Bearer ${(session as any).user.token}`;
     }
     
