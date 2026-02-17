@@ -41,8 +41,7 @@ db.query('SELECT 1 + 1 AS solution')
     });
 
 // Definición de Rutas de la API
-// OJO: Todas empiezan con /api
-app.use('/api/auth', authRoutes); 
+// app.use('/api/auth', authRoutes); 
 app.use('/api/propietarios', propietariosRoutes); 
 app.use('/api/pacientes', pacientesRoutes); 
 app.use('/api/citas', citasRoutes);
