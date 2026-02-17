@@ -19,7 +19,7 @@ const protect = async (req, res, next) => {
             const decoded = jwt.verify(token, JWT_SECRET);
 
             // 3. Obtener el usuario del token (para validar que existe en DB)
-            const [users] = await db.query('SELECT id, nombre, email FROM Usuarios WHERE id = ?', [decoded.id]);
+            const [users] = await db.query('SELECT id, nombre, email FROM usuarios WHERE id = ?', [decoded.id]);
 
             if (users.length === 0) {
                 return res.status(401).json({ message: 'No autorizado, usuario del token no encontrado.' });
