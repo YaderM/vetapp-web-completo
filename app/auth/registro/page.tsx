@@ -3,33 +3,30 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-// ✅ Importación correcta del servicio (coincide con tu AuthService actual)
 import { registerUser } from '../../services/auth/AuthService';
-
-// ⚠️ CAMBIO DE SEGURIDAD: Usamos ../.. en lugar de @ para evitar errores en Render
-// Si tu carpeta 'types' está en 'app/types', esto funcionará perfecto.
-// Si te marca rojo, prueba con tres puntos: ../../../types/auth.types
 import { RegisterData } from '../../types/auth.types'; 
-
 import { Loader2, UserPlus, AlertCircle, CalendarCheck } from 'lucide-react';
 
-const initialFormData: RegisterData = {
+// Extendemos la interfaz localmente para incluir el rol si no está en el tipo original
+interface ExtendedRegisterData extends RegisterData {
+  role?: string;
+}
+
+const initialFormData: ExtendedRegisterData = {
   nombre: '',
   email: '',
   password: '',
+  role: 'user', // ✅ Valor por defecto para nuevos usuarios/clientes
 };
 
-/**
- * Página de Registro de un nuevo usuario en el sistema veterinario.
- */
 export default function RegistroPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState<RegisterData>(initialFormData);
+  const [formData, setFormData] = useState<ExtendedRegisterData>(initialFormData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -40,7 +37,6 @@ export default function RegistroPage() {
     setSuccess(null);
     setLoading(true);
 
-    // Validación básica
     if (!formData.nombre || !formData.email || !formData.password) {
       setError("Por favor, complete todos los campos.");
       setLoading(false);
@@ -48,18 +44,17 @@ export default function RegistroPage() {
     }
 
     try {
-      // Llamada al servicio de registro
-      const result = await registerUser(formData);
+      // ✅ Enviamos el formData que ya incluye el campo 'role'
+      await registerUser(formData);
 
-      setSuccess("¡Registro exitoso! Redirigiendo al dashboard...");
+      setSuccess("¡Registro exitoso! Redirigiendo al login...");
       
       setTimeout(() => {
-        router.push('/dashboard'); // Redirigir al dashboard
+        router.push('/auth/login'); // 🔄 Mejor redirigir al login para que use sus nuevas credenciales
       }, 1500);
 
     } catch (err: any) {
       console.error("Error de registro:", err);
-      // Muestra un error específico si es posible
       setError(err.message || "Ocurrió un error desconocido al registrar.");
       setLoading(false);
     }
@@ -72,14 +67,13 @@ export default function RegistroPage() {
         <div className="text-center">
             <CalendarCheck className="mx-auto h-12 w-auto text-indigo-600" />
             <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-                Crea tu cuenta de Veterinario
+                Crea tu cuenta en VetApp
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-                Comienza a gestionar tu clínica hoy.
+                Regístrate como cliente para gestionar tus mascotas.
             </p>
         </div>
 
-        {/* Mensajes de Estado */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative flex items-start" role="alert">
             <AlertCircle className="w-5 h-5 mr-3 mt-1 flex-shrink-0" />
@@ -94,9 +88,7 @@ export default function RegistroPage() {
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
-            {/* Nombre */}
             <div>
-              <label htmlFor="nombre" className="sr-only">Nombre Completo</label>
               <input
                 id="nombre"
                 name="nombre"
@@ -109,9 +101,7 @@ export default function RegistroPage() {
                 placeholder="Nombre Completo"
               />
             </div>
-            {/* Email */}
             <div>
-              <label htmlFor="email" className="sr-only">Dirección de Email</label>
               <input
                 id="email"
                 name="email"
@@ -125,9 +115,7 @@ export default function RegistroPage() {
                 placeholder="Dirección de Email"
               />
             </div>
-            {/* Contraseña */}
             <div>
-              <label htmlFor="password" className="sr-only">Contraseña</label>
               <input
                 id="password"
                 name="password"
@@ -141,6 +129,21 @@ export default function RegistroPage() {
                 placeholder="Contraseña"
               />
             </div>
+          </div>
+
+          {/* ✅ SELECT DE ROL PARA QUE EL PROFE PUEDA ELEGIR */}
+          <div className="mt-4">
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700">Tipo de Usuario</label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            >
+              <option value="user">Cliente (Mascotas)</option>
+              <option value="admin">Administrador (Clínica)</option>
+            </select>
           </div>
 
           <div className="pt-4">
