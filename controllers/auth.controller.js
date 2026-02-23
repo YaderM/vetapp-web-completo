@@ -9,24 +9,26 @@ const generateToken = (id) => {
 };
 
 const register = async (req, res) => {
-    const { nombre, email, password } = req.body;
+    const { nombre, email, password, rol } = req.body; // Agregado rol
     if (!nombre || !email || !password) {
         return res.status(400).json({ message: 'Por favor, introduce todos los campos: nombre, email y contraseña.' });
     }
     try {
-        // CORRECCIÓN: 'usuarios' en minúscula
         const [existingUser] = await db.query('SELECT id, email FROM usuarios WHERE email = ?', [email]);
         if (existingUser.length > 0) {
             return res.status(400).json({ message: 'El usuario con ese email ya existe.' });
         }
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        // CORRECCIÓN: 'usuarios' en minúscula
-        const insertQuery = 'INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)';
-        const [result] = await db.query(insertQuery, [nombre, email, hashedPassword]);
+        
+        // Ajuste en el INSERT para incluir rol (por defecto cliente)
+        const insertQuery = 'INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)';
+        const [result] = await db.query(insertQuery, [nombre, email, hashedPassword, rol || 'cliente']);
+        
         const newUserId = result.insertId;
         res.status(201).json({
             id: newUserId, nombre, email,
+            rol: rol || 'cliente', // Devolvemos el rol
             token: generateToken(newUserId),
             message: 'Registro exitoso.'
         });
@@ -48,7 +50,6 @@ const login = async (req, res) => {
     console.log(`[DEBUG] Email recibido: ${email}`);
 
     try {
-        // CORRECCIÓN: 'usuarios' en minúscula
         const [users] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
         const user = users[0];
 
@@ -67,6 +68,7 @@ const login = async (req, res) => {
                 id: user.id,
                 nombre: user.nombre,
                 email: user.email,
+                rol: user.rol, // ⬅️ AJUSTE: Enviamos el rol de la base de datos
                 token: generateToken(user.id),
                 message: 'Login exitoso.'
             });
