@@ -10,7 +10,7 @@ const generateToken = (id) => {
 
 const register = async (req, res) => {
     const { nombre, email, password, rol } = req.body; 
-    const userRol = rol || 'cliente'; // Definimos el rol de antemano
+    const userRol = rol || 'cliente'; 
 
     if (!nombre || !email || !password) {
         return res.status(400).json({ message: 'Por favor, introduce todos los campos: nombre, email y contraseña.' });
@@ -31,12 +31,14 @@ const register = async (req, res) => {
         
         const newUserId = result.insertId;
 
-        // --- BLOQUE DE SINCRONIZACIÓN AUTOMÁTICA ---
-        // Si es un cliente, lo creamos de una vez en la tabla 'propietarios'
+        // --- BLOQUE DE SINCRONIZACIÓN AUTOMÁTICA CORREGIDO ---
         if (userRol === 'cliente') {
-            const insertPropQuery = 'INSERT INTO propietarios (nombre, email, usuario_id) VALUES (?, ?, ?)';
-            // Usamos el nombre y email del registro, y vinculamos el ID que acaba de generar MySQL
-            await db.query(insertPropQuery, [nombre, email, newUserId]);
+            // Se agrega 'apellido' con valor vacío para evitar el error "Field 'apellido' doesn't have a default value"
+            const insertPropQuery = 'INSERT INTO propietarios (nombre, apellido, email, usuario_id) VALUES (?, ?, ?, ?)';
+            
+            // Mandamos: nombre, '' (vacio), email, y el ID recién creado
+            await db.query(insertPropQuery, [nombre, '', email, newUserId]);
+            
             console.log(`[DEBUG] Propietario creado automáticamente para: ${nombre}`);
         }
         // --------------------------------------------
