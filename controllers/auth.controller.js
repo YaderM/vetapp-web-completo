@@ -9,29 +9,45 @@ const generateToken = (id) => {
 };
 
 const register = async (req, res) => {
-    const { nombre, email, password, rol } = req.body; // Agregado rol
+    const { nombre, email, password, rol } = req.body; 
+    const userRol = rol || 'cliente'; // Definimos el rol de antemano
+
     if (!nombre || !email || !password) {
         return res.status(400).json({ message: 'Por favor, introduce todos los campos: nombre, email y contraseña.' });
     }
+
     try {
         const [existingUser] = await db.query('SELECT id, email FROM usuarios WHERE email = ?', [email]);
         if (existingUser.length > 0) {
             return res.status(400).json({ message: 'El usuario con ese email ya existe.' });
         }
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         
-        // Ajuste en el INSERT para incluir rol (por defecto cliente)
+        // 1. Insertamos en la tabla 'usuarios'
         const insertQuery = 'INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)';
-        const [result] = await db.query(insertQuery, [nombre, email, hashedPassword, rol || 'cliente']);
+        const [result] = await db.query(insertQuery, [nombre, email, hashedPassword, userRol]);
         
         const newUserId = result.insertId;
+
+        // --- BLOQUE DE SINCRONIZACIÓN AUTOMÁTICA ---
+        // Si es un cliente, lo creamos de una vez en la tabla 'propietarios'
+        if (userRol === 'cliente') {
+            const insertPropQuery = 'INSERT INTO propietarios (nombre, email, usuario_id) VALUES (?, ?, ?)';
+            // Usamos el nombre y email del registro, y vinculamos el ID que acaba de generar MySQL
+            await db.query(insertPropQuery, [nombre, email, newUserId]);
+            console.log(`[DEBUG] Propietario creado automáticamente para: ${nombre}`);
+        }
+        // --------------------------------------------
+
         res.status(201).json({
             id: newUserId, nombre, email,
-            rol: rol || 'cliente', // Devolvemos el rol
+            rol: userRol, 
             token: generateToken(newUserId),
             message: 'Registro exitoso.'
         });
+
     } catch (error) {
         console.error('Error en el registro:', error);
         res.status(500).json({ message: 'Error interno del servidor durante el registro.' });
@@ -68,7 +84,7 @@ const login = async (req, res) => {
                 id: user.id,
                 nombre: user.nombre,
                 email: user.email,
-                rol: user.rol, // ⬅️ AJUSTE: Enviamos el rol de la base de datos
+                rol: user.rol, 
                 token: generateToken(user.id),
                 message: 'Login exitoso.'
             });
