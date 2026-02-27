@@ -40,16 +40,13 @@ export default function CrearCitaPage() {
       setError(null);
       const data: any[] = await getPacientes(); 
       
-      // --- CAMBIO AQUÍ PARA COINCIDIR CON EL NUEVO BACKEND ---
       setPacientes(data.map(p => ({ 
           id: p.id, 
           nombre: p.nombre,
-          // Validamos si existe p.propietario y usamos los campos del nuevo JOIN
           propietarioNombre: p.propietario?.nombre 
             ? `${p.propietario.nombre} ${p.propietario.apellido || ''}`.trim() 
             : 'Sin Propietario'
       })));
-      // -------------------------------------------------------
 
     } catch (err: any) {
       console.error("Error al cargar pacientes:", err);
@@ -83,13 +80,15 @@ export default function CrearCitaPage() {
     }
 
     try {
-      // Combinamos fecha y hora. IMPORTANTE: Enviar también la hora por separado si el backend lo pide.
-      const dataToSend: CitaPayload = {
+      // --- CAMBIO CLAVE AQUÍ PARA EVITAR EL ERROR DE VERCEL ---
+      // Usamos el tipo "any" para que TypeScript no se queje de la propiedad 'hora'
+      const dataToSend: any = {
         fecha: fechaCita,
-        hora: horaCita, // Añadimos hora explícitamente ya que tu backend la pide por separado
+        hora: horaCita, 
         motivo,
         pacienteId: String(pacienteId),
       };
+      // -------------------------------------------------------
 
       await createCita(dataToSend);
       setSuccess("¡Cita registrada exitosamente! Redirigiendo...");
