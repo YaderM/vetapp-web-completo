@@ -1,11 +1,11 @@
 const db = require('../db'); // Importa la conexión a MySQL
 
 /**
- * @desc Obtener todas las citas (CON JOINs)
+ * @desc Obtener todas las citas (CON JOINs ACTUALIZADOS)
  * @route GET /api/citas
  */
 const getAllCitas = async (req, res) => {
-    // CORRECCIÓN: Tablas 'citas', 'pacientes', 'propietarios' en minúscula
+    // CORRECCIÓN: JOIN con propietarios usando usuario_id
     const query = `
         SELECT 
             c.id, c.fecha, c.hora, c.motivo, c.estado, c.pacienteId,
@@ -14,18 +14,17 @@ const getAllCitas = async (req, res) => {
             pr.apellido AS propietarioApellido
         FROM citas c
         JOIN pacientes p ON c.pacienteId = p.id
-        JOIN propietarios pr ON p.propietarioId = pr.id
+        JOIN propietarios pr ON p.usuario_id = pr.usuario_id
         ORDER BY c.fecha DESC, c.hora ASC;
     `;
     
     try {
         const [rows] = await db.query(query);
         
-        // Mapeamos el resultado para que coincida con la interfaz del frontend
         const citas = rows.map(row => ({
             id: row.id,
             fecha: row.fecha,
-            hora: row.hora, // Agregué hora por si la necesitas en el front
+            hora: row.hora, 
             motivo: row.motivo,
             estado: row.estado,
             pacienteId: row.pacienteId,
@@ -46,7 +45,6 @@ const getAllCitas = async (req, res) => {
  */
 const getCitaById = async (req, res) => {
     const { id } = req.params;
-    // CORRECCIÓN: Tablas en minúscula
     const query = `
         SELECT 
             c.id, c.fecha, c.hora, c.motivo, c.estado, c.pacienteId,
@@ -92,11 +90,9 @@ const createCita = async (req, res) => {
         return res.status(400).json({ message: 'Faltan campos obligatorios.' });
     }
 
-    // CORRECCIÓN: Tabla 'citas' en minúscula y agregamos campo 'hora' si viene
     const query = 'INSERT INTO citas (fecha, hora, motivo, pacienteId) VALUES (?, ?, ?, ?)';
     
     try {
-        // Si no mandan hora, ponemos una por defecto o null
         const horaFinal = hora || '00:00:00'; 
         const [result] = await db.query(query, [fecha, horaFinal, motivo, pacienteId]);
         
@@ -106,16 +102,12 @@ const createCita = async (req, res) => {
         });
     } catch (error) {
         console.error('Error al crear cita:', error);
-        if (error.code === 'ER_NO_REFERENCED_ROW_2') {
-            return res.status(404).json({ message: 'Error: El pacienteId proporcionado no existe.' });
-        }
         res.status(500).json({ message: 'Error interno del servidor al crear cita.' });
     }
 };
 
 /**
  * @desc Actualizar una cita
- * @route PUT /api/citas/:id
  */
 const updateCita = async (req, res) => {
     const { id } = req.params;
@@ -125,7 +117,6 @@ const updateCita = async (req, res) => {
         return res.status(400).json({ message: 'Faltan campos obligatorios.' });
     }
 
-    // CORRECCIÓN: Tabla 'citas' en minúscula
     const query = 'UPDATE citas SET fecha = ?, hora = ?, motivo = ?, estado = ?, pacienteId = ? WHERE id = ?';
     
     try {
@@ -144,20 +135,15 @@ const updateCita = async (req, res) => {
         });
     } catch (error) {
         console.error(`Error al actualizar cita con ID ${id}:`, error);
-        if (error.code === 'ER_NO_REFERENCED_ROW_2') {
-            return res.status(404).json({ message: 'Error: El pacienteId proporcionado no existe.' });
-        }
-        res.status(500).json({ message: 'Error interno del servidor al actualizar cita.' });
+        res.status(500).json({ message: 'Error interno del servidor.' });
     }
 };
 
 /**
  * @desc Eliminar una cita
- * @route DELETE /api/citas/:id
  */
 const deleteCita = async (req, res) => {
     const { id } = req.params;
-    // CORRECCIÓN: Tabla 'citas' en minúscula
     const query = 'DELETE FROM citas WHERE id = ?';
     
     try {
@@ -170,7 +156,7 @@ const deleteCita = async (req, res) => {
         res.status(200).json({ message: `Cita con ID ${id} eliminada correctamente.` });
     } catch (error) {
         console.error(`Error al eliminar cita con ID ${id}:`, error);
-        res.status(500).json({ message: 'Error interno del servidor al eliminar cita.' });
+        res.status(500).json({ message: 'Error interno del servidor.' });
     }
 };
 
