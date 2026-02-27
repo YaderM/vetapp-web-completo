@@ -9,7 +9,8 @@ const generateToken = (id) => {
 };
 
 const register = async (req, res) => {
-    const { nombre, email, password, rol } = req.body; 
+    // AHORA RECIBIMOS: mascotaNombre y mascotaEspecie desde el celular
+    const { nombre, email, password, rol, mascotaNombre, mascotaEspecie } = req.body; 
     const userRol = rol || 'cliente'; 
 
     if (!nombre || !email || !password) {
@@ -31,15 +32,21 @@ const register = async (req, res) => {
         
         const newUserId = result.insertId;
 
-        // --- BLOQUE DE SINCRONIZACIÓN AUTOMÁTICA CORREGIDO ---
+        // --- BLOQUE DE SINCRONIZACIÓN AUTOMÁTICA (PROPIETARIO + PACIENTE) ---
         if (userRol === 'cliente') {
-            // Se agrega 'apellido' con valor vacío para evitar el error "Field 'apellido' doesn't have a default value"
+            // A. CREAR PROPIETARIO
             const insertPropQuery = 'INSERT INTO propietarios (nombre, apellido, email, usuario_id) VALUES (?, ?, ?, ?)';
-            
-            // Mandamos: nombre, '' (vacio), email, y el ID recién creado
             await db.query(insertPropQuery, [nombre, '', email, newUserId]);
             
-            console.log(`[DEBUG] Propietario creado automáticamente para: ${nombre}`);
+            // B. CREAR PACIENTE (MASCOTA) AUTOMÁTICAMENTE
+            // Si no mandan nombre de mascota, usamos "Mi Mascota" por defecto
+            const nombreFinalMascota = mascotaNombre || 'Mi Mascota';
+            const especieFinal = mascotaEspecie || 'No especificada';
+
+            const insertMascotaQuery = 'INSERT INTO pacientes (nombre, especie, usuario_id) VALUES (?, ?, ?)';
+            await db.query(insertMascotaQuery, [nombreFinalMascota, especieFinal, newUserId]);
+            
+            console.log(`[DEBUG] Propietario y Mascota (${nombreFinalMascota}) creados para: ${nombre}`);
         }
         // --------------------------------------------
 
@@ -47,7 +54,7 @@ const register = async (req, res) => {
             id: newUserId, nombre, email,
             rol: userRol, 
             token: generateToken(newUserId),
-            message: 'Registro exitoso.'
+            message: 'Registro exitoso con mascota vinculada.'
         });
 
     } catch (error) {
@@ -61,27 +68,20 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        console.log("[DEBUG] Error: Email o Password faltantes.");
         return res.status(400).json({ message: 'Por favor, introduce email y contraseña.' });
     }
-
-    console.log(`[DEBUG] Email recibido: ${email}`);
 
     try {
         const [users] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
         const user = users[0];
 
         if (!user) {
-            console.log(`[DEBUG] Usuario no encontrado para email: ${email}`);
-            return res.status(401).json({ message: 'Credenciales inválidas (Usuario no encontrado).' });
+            return res.status(401).json({ message: 'Credenciales inválidas.' });
         }
-
-        console.log(`[DEBUG] Usuario encontrado en DB: ${user.nombre}`);
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (isMatch) {
-            console.log("[DEBUG] ¡Contraseña VÁLIDA! Generando token.");
             res.json({
                 id: user.id,
                 nombre: user.nombre,
@@ -91,13 +91,12 @@ const login = async (req, res) => {
                 message: 'Login exitoso.'
             });
         } else {
-            console.log("[DEBUG] ¡Contraseña INVÁLIDA! (bcrypt.compare falló)");
-            res.status(401).json({ message: 'Credenciales inválidas (Contraseña incorrecta).' });
+            res.status(401).json({ message: 'Credenciales inválidas.' });
         }
 
     } catch (error) {
         console.error('Error catastrófico en el login:', error);
-        res.status(500).json({ message: 'Error interno del servidor durante el inicio de sesión.' });
+        res.status(500).json({ message: 'Error interno del servidor.' });
     }
 };
 
