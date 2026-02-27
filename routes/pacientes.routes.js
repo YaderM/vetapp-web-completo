@@ -1,8 +1,8 @@
-// routes/pacientes.routes.js
 const express = require('express');
 const { 
     getAllPacientes,
     getPacienteById,
+    getPacientesByUsuario, // IMPORTANTE: Agregamos la nueva función aquí
     createPaciente,
     updatePaciente,
     deletePaciente
@@ -11,13 +11,18 @@ const { protect } = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
-// Protegemos todas las rutas de pacientes
-// GET /api/pacientes y POST /api/pacientes
+// --- RUTAS DE PACIENTES ---
+
+// 1. Ruta específica para la App (Debe ir antes de las rutas con :id)
+// Esta es la que resuelve el "Cargando mascota..."
+router.get('/usuario/:usuarioId', protect, getPacientesByUsuario);
+
+// 2. Rutas generales
 router.route('/')
     .get(protect, getAllPacientes)
     .post(protect, createPaciente);
 
-// GET /api/pacientes/:id, PUT /api/pacientes/:id, DELETE /api/pacientes/:id
+// 3. Rutas por ID de paciente
 router.route('/:id')
     .get(protect, getPacienteById)
     .put(protect, updatePaciente)
