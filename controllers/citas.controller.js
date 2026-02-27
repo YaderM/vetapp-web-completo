@@ -1,11 +1,11 @@
 const db = require('../db'); // Importa la conexión a MySQL
 
 /**
- * @desc Obtener todas las citas (CON JOINs ACTUALIZADOS)
+ * @desc Obtener todas las citas (CON JOINs ACTUALIZADOS Y SEGUROS)
  * @route GET /api/citas
  */
 const getAllCitas = async (req, res) => {
-    // CORRECCIÓN: JOIN con propietarios usando usuario_id
+    // Usamos LEFT JOIN para que la cita no desaparezca si el paciente o dueño tienen IDs huerfanos
     const query = `
         SELECT 
             c.id, c.fecha, c.hora, c.motivo, c.estado, c.pacienteId,
@@ -13,8 +13,8 @@ const getAllCitas = async (req, res) => {
             pr.nombre AS propietarioNombre,
             pr.apellido AS propietarioApellido
         FROM citas c
-        JOIN pacientes p ON c.pacienteId = p.id
-        JOIN propietarios pr ON p.usuario_id = pr.usuario_id
+        LEFT JOIN pacientes p ON c.pacienteId = p.id
+        LEFT JOIN propietarios pr ON p.usuario_id = pr.usuario_id
         ORDER BY c.fecha DESC, c.hora ASC;
     `;
     
@@ -28,8 +28,11 @@ const getAllCitas = async (req, res) => {
             motivo: row.motivo,
             estado: row.estado,
             pacienteId: row.pacienteId,
-            pacienteNombre: row.pacienteNombre,
-            propietarioNombre: `${row.propietarioNombre} ${row.propietarioApellido}`
+            pacienteNombre: row.pacienteNombre || 'Paciente no asignado',
+            // Manejamos el nombre completo de forma segura por si el propietario es nulo
+            propietarioNombre: row.propietarioNombre 
+                ? `${row.propietarioNombre} ${row.propietarioApellido || ''}`.trim()
+                : 'Propietario no asignado'
         }));
 
         res.status(200).json(citas);
@@ -50,7 +53,7 @@ const getCitaById = async (req, res) => {
             c.id, c.fecha, c.hora, c.motivo, c.estado, c.pacienteId,
             p.nombre AS pacienteNombre
         FROM citas c
-        JOIN pacientes p ON c.pacienteId = p.id
+        LEFT JOIN pacientes p ON c.pacienteId = p.id
         WHERE c.id = ?;
     `;
     
@@ -69,7 +72,7 @@ const getCitaById = async (req, res) => {
             motivo: row.motivo,
             estado: row.estado,
             pacienteId: row.pacienteId,
-            pacienteNombre: row.pacienteNombre,
+            pacienteNombre: row.pacienteNombre || 'Sin nombre',
         };
         
         res.status(200).json(cita);
