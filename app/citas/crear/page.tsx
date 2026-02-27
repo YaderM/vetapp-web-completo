@@ -1,21 +1,15 @@
-// app/citas/crear/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-// ----- ¡CORRECCIÓN DE RUTAS! -----
 import MainLayout from '@/app/components/Layout/MainLayout';
-// Importamos los servicios de cita Y de paciente (para el dropdown)
 import { createCita, type CitaPayload } from '@/app/services/cita.service';
 import { getPacientes, type Paciente } from '@/app/services/paciente.service';
-// ---------------------------------
 
 import { Loader2, CalendarCheck, Save, ArrowLeft, AlertTriangle, CheckCircle } from 'lucide-react';
 
-// --- Tipos de Datos ---
-// Usamos un tipo simple para el dropdown de pacientes
 interface PacienteOption {
   id: number;
   nombre: string;
@@ -28,36 +22,38 @@ const initialFormData: Omit<CitaPayload, 'fecha'> & { fechaCita: string; horaCit
   fechaCita: '',
   horaCita: '',
 };
-// --- Fin de Tipos ---
-
 
 export default function CrearCitaPage() {
   const [formData, setFormData] = useState(initialFormData);
   const [pacientes, setPacientes] = useState<PacienteOption[]>([]);
   
-  const [loading, setLoading] = useState(true); // Carga inicial de pacientes
-  const [isSubmitting, setIsSubmitting] = useState(false); // Envío de formulario
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const router = useRouter();
 
-  // Cargar los pacientes para el <select>
   const loadPacientes = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data: Paciente[] = await getPacientes();
-      // Mapeamos los datos para el dropdown
+      const data: any[] = await getPacientes(); 
+      
+      // --- CAMBIO AQUÍ PARA COINCIDIR CON EL NUEVO BACKEND ---
       setPacientes(data.map(p => ({ 
           id: p.id, 
           nombre: p.nombre,
-          // Asumimos que getPacientes() devuelve el propietario anidado
-          propietarioNombre: p.propietario ? `${p.propietario.nombre} ${p.propietario.apellido}` : 'Sin Propietario'
+          // Validamos si existe p.propietario y usamos los campos del nuevo JOIN
+          propietarioNombre: p.propietario?.nombre 
+            ? `${p.propietario.nombre} ${p.propietario.apellido || ''}`.trim() 
+            : 'Sin Propietario'
       })));
+      // -------------------------------------------------------
+
     } catch (err: any) {
       console.error("Error al cargar pacientes:", err);
-      setError("Error al cargar la lista de pacientes. " + err.message);
+      setError("Error al cargar la lista de pacientes.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +62,6 @@ export default function CrearCitaPage() {
   useEffect(() => {
     loadPacientes();
   }, [loadPacientes]);
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -88,11 +83,10 @@ export default function CrearCitaPage() {
     }
 
     try {
-      // Combinamos la fecha y la hora en un formato ISO 8601 válido
-      const fechaHoraISO = new Date(`${fechaCita}T${horaCita}`).toISOString();
-
+      // Combinamos fecha y hora. IMPORTANTE: Enviar también la hora por separado si el backend lo pide.
       const dataToSend: CitaPayload = {
-        fecha: fechaHoraISO,
+        fecha: fechaCita,
+        hora: horaCita, // Añadimos hora explícitamente ya que tu backend la pide por separado
         motivo,
         pacienteId: String(pacienteId),
       };
@@ -111,8 +105,6 @@ export default function CrearCitaPage() {
       setIsSubmitting(false);
     }
   };
-
-  // --- Renderizado ---
 
   if (loading) {
     return (
@@ -156,7 +148,6 @@ export default function CrearCitaPage() {
               </div>
             )}
             
-            {/* Selector de Paciente */}
             <div>
               <label htmlFor="pacienteId" className="block text-sm font-medium text-gray-700">
                 Paciente <span className="text-red-500">*</span>
@@ -173,7 +164,7 @@ export default function CrearCitaPage() {
                 {pacientes.length > 0 ? (
                   pacientes.map(p => (
                     <option key={p.id} value={p.id}>
-                      {p.nombre} (Propietario: {p.propietarioNombre})
+                      {p.nombre} (Dueño: {p.propietarioNombre})
                     </option>
                   ))
                 ) : (
@@ -183,7 +174,6 @@ export default function CrearCitaPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Fecha */}
               <div>
                 <label htmlFor="fechaCita" className="block text-sm font-medium text-gray-700">Fecha <span className="text-red-500">*</span></label>
                 <input
@@ -197,7 +187,6 @@ export default function CrearCitaPage() {
                 />
               </div>
               
-              {/* Hora */}
               <div>
                 <label htmlFor="horaCita" className="block text-sm font-medium text-gray-700">Hora <span className="text-red-500">*</span></label>
                 <input
@@ -212,8 +201,6 @@ export default function CrearCitaPage() {
               </div>
             </div>
 
-
-            {/* Motivo */}
             <div>
               <label htmlFor="motivo" className="block text-sm font-medium text-gray-700">Motivo de la Cita <span className="text-red-500">*</span></label>
               <textarea
@@ -238,7 +225,6 @@ export default function CrearCitaPage() {
                 {isSubmitting ? 'Guardando...' : 'Guardar Cita'}
               </button>
             </div>
-            
           </form>
         </div>
       </div>
